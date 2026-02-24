@@ -4,7 +4,7 @@ import std/[strutils, sequtils]
 type
   Choice* = object
     id*: string
-    label*: string  # display name, etc.
+    label*: string # display name, etc.
 
 proc icontains(a, b: string): bool =
   a.toLowerAscii().contains(b.toLowerAscii())
@@ -15,14 +15,16 @@ proc filterChoices*(choices: seq[Choice]; query: string): seq[Choice] =
     if c.id.icontains(query) or c.label.icontains(query):
       result.add(c)
 
-proc selectOne*(choices: seq[Choice]; prompt: string; allowEmpty = false): string =
+proc selectOne*(choices: seq[Choice]; prompt: string;
+    allowEmpty = false): string =
   ## Returns selected choice.id (or "" if allowEmpty and user skips)
   if choices.len == 0:
     return ""
 
   while true:
     echo prompt
-    echo "  (type to search; empty=all" & (if allowEmpty: ", 'skip'=none" else: "") & ")"
+    echo "  (type to search; empty=all" & (
+        if allowEmpty: ", 'skip'=none" else: "") & ")"
     stdout.write("> ")
     let q = stdin.readLine().strip()
 

@@ -53,31 +53,31 @@ proc confirm(prompt: string; defaultYes = true): bool =
 proc makeChoicesLic(db: Db): seq[Choice] =
   for id, l in db.licenses.pairs:
     result.add(Choice(id: id, label: l.name))
-  result.sort(proc(a,b: Choice): int = system.cmp(a.id, b.id))
+  result.sort(proc(a, b: Choice): int = system.cmp(a.id, b.id))
 
 proc makeChoicesCre(db: Db): seq[Choice] =
   for id, c in db.creators.pairs:
     result.add(Choice(id: id, label: c.name))
-  result.sort(proc(a,b: Choice): int = system.cmp(a.id, b.id))
+  result.sort(proc(a, b: Choice): int = system.cmp(a.id, b.id))
 
 proc addAsset*(
-  db = "assetdb",
-  root = ".",
-  file = "",
-  id = "",
-  name = "",
-  `type` = "",
-  license = "",
-  creator: seq[string] = @[],
-  tag: seq[string] = @[],
-  sourceUrl = "",
-  sourceVendor = "",
-  nonInteractive = false,
+  db = "assetdb";
+  root = ".";
+  file = "";
+  id = "";
+  name = "";
+  `type` = "";
+  license = "";
+  creator: seq[string] = @[];
+  tag: seq[string] = @[];
+  sourceUrl = "";
+  sourceVendor = "";
+  nonInteractive = false;
   dryRun = false
 ) =
   ## Add an asset (hybrid: flags + interactive prompts).
   let projectRoot = root.normalizedPath()
-  let dbObj = loadDb(db)        # uses ensureDbPath inside
+  let dbObj = loadDb(db) # uses ensureDbPath inside
   let dbRoot = dbObj.dbRoot
 
   var a: Asset
@@ -154,7 +154,7 @@ proc addAsset*(
   if lic.len == 0:
     if nonInteractive:
       quit("ERROR: --license is required in --non-interactive mode")
-    lic = selectOne(makeChoicesLic(dbObj), "License", allowEmpty=false)
+    lic = selectOne(makeChoicesLic(dbObj), "License", allowEmpty = false)
   if not dbObj.licenses.hasKey(lic):
     quit("ERROR: license_id not found in db: " & lic)
   a.licenseId = lic
@@ -170,7 +170,7 @@ proc addAsset*(
     if not nonInteractive:
       a.creatorIds = selectMany(makeChoicesCre(dbObj), "Creators")
     else:
-      a.creatorIds = @[]  # allowed
+      a.creatorIds = @[] # allowed
 
   # 7) tags
   let tagsOpt = parseMultiOpt(tag)
