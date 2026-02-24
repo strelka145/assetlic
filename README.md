@@ -11,8 +11,6 @@ It helps you:
 
 Designed for Git-based workflows and minimal side effects.
 
----
-
 ## Philosophy
 
 - 1 asset = 1 YAML file
@@ -21,7 +19,6 @@ Designed for Git-based workflows and minimal side effects.
 - Git-friendly structure
 - CLI-first workflow
 
----
 
 ## Installation
 
