@@ -26,7 +26,8 @@ proc validateRequiredFields(db: Db): seq[Issue] =
     if a.name.len == 0: result.add(err("ASSET_NAME_MISSING", "asset.name is required", hint))
     if a.`type`.len == 0: result.add(err("ASSET_TYPE_MISSING", "asset.type is required", hint))
     if a.licenseId.len == 0: result.add(err("ASSET_LICENSE_MISSING", "asset.license_id is required", hint))
-    if a.files.len == 0: result.add(err("ASSET_FILES_MISSING", "asset.files must have at least one entry", hint))
+    let isExample = a.tags.anyIt(it == "example")
+    if a.files.len == 0 and not isExample: result.add(err("ASSET_FILES_MISSING", "asset.files must have at least one entry", hint))
 
   for id, l in db.licenses.pairs:
     let hint = "license:" & id

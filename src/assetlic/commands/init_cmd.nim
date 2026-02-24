@@ -38,9 +38,8 @@ source:
   vendor: "ExampleSite"
 creator_ids: ["example_creator"]
 license_id: cc_by_4
-files:
-  - "Assets/Audio/BGM/example.ogg"
-tags: ["release"]
+files: []
+tags: ["example"]
 """
 
 proc writeIfMissing(path, content: string) =
