@@ -31,7 +31,7 @@ nimble install assetlic
 ### From Source
 
 ```bash
-git clone https://github.com/yourname/assetlic.git
+git clone https://github.com/strelka145/assetlic.git
 cd assetlic
 nimble build -d:release
 ```
