@@ -1,6 +1,7 @@
 import std/[os, strutils, sequtils, tables]
 import ../domain/types
 import ../paths
+import ../io/path_guard
 
 type
   Severity* = enum
@@ -82,7 +83,7 @@ proc validatePaths(db: Db; projectRoot: string): seq[Issue] =
       let absPath = (root / rel).normalizedPath()
 
       # Prevent path escaping project root via ".."
-      if not absPath.startsWith(root):
+      if not isInsideProject(projectRoot, raw):
         result.add(err("PATH_ESCAPES_ROOT",
             "files entry escapes project root: " & raw, hint))
         continue

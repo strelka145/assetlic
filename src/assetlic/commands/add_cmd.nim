@@ -5,6 +5,7 @@ import ../io/yaml_io
 import ../paths
 import ../ui/select
 import ../render/yaml_render
+import ../io/path_guard
 
 proc slugify(s: string): string =
   var r = newStringOfCap(s.len)
@@ -98,8 +99,8 @@ proc addAsset*(
   let rel = normPathPosixish(rawFile)
   let absPath = (projectRoot / rel).normalizedPath()
 
-  if not absPath.startsWith(projectRoot):
-    quit("ERROR: files entry escapes project root: " & rawFile)
+  if not isInsideProject(root, file):
+    quit("ERROR: files entry escapes project root: " & file)
 
   if not fileExists(absPath) and not dirExists(absPath):
     echo "WARN: file not found: " & rawFile & " (you can fix later; lint will warn)"
