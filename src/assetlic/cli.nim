@@ -4,4 +4,4 @@ from ./commands/lint_cmd import lint
 from ./commands/add_cmd import addAsset
 
 proc runCli*() =
-  dispatchMulti([init], [lint], [addAsset])
+  dispatchMulti([init], [lint], [addAsset, cmdName = "add"])
