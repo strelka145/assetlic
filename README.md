@@ -22,12 +22,6 @@ Designed for Git-based workflows and minimal side effects.
 
 ## Installation
 
-### From Nimble
-
-```bash
-nimble install assetlic
-```
-
 ### From Source
 
 ```bash
