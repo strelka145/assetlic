@@ -20,7 +20,7 @@ proc addLicense*(
   nonInteractive = false,
   dryRun = false
 ) =
-    ## Add a license (hybrid: flags + interactive prompts). 
+  ## Add a license (hybrid: flags + interactive prompts). 
   var lic = License()
 
   # --- NAME ---
