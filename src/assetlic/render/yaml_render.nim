@@ -47,3 +47,31 @@ proc renderAssetYaml*(a: Asset): string =
     lines.add("modifications: " & yq(a.modifications))
 
   result = lines.join("\n") & "\n"
+
+proc renderLicenseYaml*(l: License): string =
+  var lines: seq[string] = @[]
+  lines.add("id: " & l.id)
+  lines.add("name: " & yq(l.name))
+  if l.url.len > 0:
+    lines.add("url: " & yq(l.url))
+
+  # requires block (always present for stable schema)
+  lines.add("requires:")
+  lines.add("  attribution: " & $l.requires.attribution)
+  lines.add("  notice: " & $l.requires.notice)
+  lines.add("  shareAlike: " & $l.requires.shareAlike)
+  lines.add("  nonCommercial: " & $l.requires.nonCommercial)
+  lines.add("  noDerivatives: " & $l.requires.noDerivatives)
+
+  if l.defaultCreditTemplate.len > 0:
+    lines.add("default_credit_template: " & yq(l.defaultCreditTemplate))
+
+  result = lines.join("\n") & "\n"
+
+proc renderCreatorYaml*(c: Creator): string =
+  var lines: seq[string] = @[]
+  lines.add("id: " & c.id)
+  lines.add("name: " & yq(c.name))
+  if c.url.len > 0:
+    lines.add("url: " & yq(c.url))
+  result = lines.join("\n") & "\n"
