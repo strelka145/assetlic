@@ -53,15 +53,24 @@ proc selectOne*(choices: seq[Choice]; prompt: string;
       discard
     echo "Invalid selection."
 
-proc selectMany*(choices: seq[Choice]; prompt: string): seq[string] =
+proc selectMany*(
+  choices: seq[Choice];
+  prompt: string;
+  onCreate: proc(): Choice {.closure.} = nil
+): seq[string] =
   ## Returns list of selected choice.id (deduped, preserves selection order)
   result = @[]
-  if choices.len == 0:
+  if choices.len == 0 and onCreate.isNil:
     return
+
+  var baseChoices = choices
 
   while true:
     echo prompt
-    echo "  (type to search; empty=all, 'done'=finish, 'skip'=none)"
+    if onCreate.isNil:
+      echo "  (type to search; empty=all, 'done'=finish, 'skip'=none)"
+    else:
+      echo "  (type to search; empty=all, 'new'=create, 'done'=finish, 'skip'=none)"
     stdout.write("> ")
     let q = stdin.readLine().strip()
 
@@ -71,7 +80,13 @@ proc selectMany*(choices: seq[Choice]; prompt: string): seq[string] =
       result.setLen(0)
       break
 
-    let matches = filterChoices(choices, q)
+    if (not onCreate.isNil) and (q == "new"):
+      let created = onCreate()
+      baseChoices.add(created)
+      echo "Added: " & created.id & " - " & created.label
+      continue
+
+    let matches = filterChoices(baseChoices, q)
     if matches.len == 0:
       echo "No matches."
       continue

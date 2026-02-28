@@ -78,7 +78,7 @@ proc addAsset*(
 ) =
   ## Add an asset (hybrid: flags + interactive prompts).
   let projectRoot = root.normalizedPath()
-  let dbObj = loadDb(db) # uses ensureDbPath inside
+  var dbObj = loadDb(db) # uses ensureDbPath inside
   let dbRoot = dbObj.dbRoot
 
   var a: Asset
@@ -169,7 +169,39 @@ proc addAsset*(
     a.creatorIds = creatorsOpt.deduplicate()
   else:
     if not nonInteractive:
-      a.creatorIds = selectMany(makeChoicesCre(dbObj), "Creators")
+      a.creatorIds = selectMany(
+        makeChoicesCre(dbObj),
+        "Creators",
+        onCreate = (proc(): Choice =
+          let cid = slugify(ask("Creator id", "creator"))
+
+          if dbObj.creators.hasKey(cid):
+            echo "Creator already exists: " & cid
+            return Choice(id: cid, label: dbObj.creators[cid].name)
+
+          var c: Creator
+          c.id = cid
+          c.name = ask("Creator name", titleize(cid))
+          c.url = ask("Creator URL (optional)", "")
+
+          createDir(dbRoot / "creators")
+          let outPath = dbRoot / "creators" / (c.id & ".yml")
+          let yml = renderCreatorYaml(c)
+
+          if dryRun:
+            echo "---"
+            echo yml
+            echo "---"
+            echo "Would create: " & outPath
+          else:
+            writeFile(outPath, yml)
+            echo "Created: " & outPath
+
+          dbObj.creators[c.id] = c
+          return Choice(id: c.id, label: c.name)
+        )
+      )
+
     else:
       a.creatorIds = @[] # allowed
 
