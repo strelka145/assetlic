@@ -1,4 +1,4 @@
-import std/[os, tables, strutils, sequtils, algorithm]
+import std/[os, tables, strutils, algorithm]
 import yaml
 import ../domain/types
 import ../paths

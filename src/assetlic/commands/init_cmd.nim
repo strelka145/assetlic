@@ -1,5 +1,4 @@
 import std/[os, strformat]
-import cligen
 
 const SeedCcBy4 = """id: cc_by_4
 name: "CC BY 4.0"

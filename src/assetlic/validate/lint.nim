@@ -1,4 +1,4 @@
-import std/[os, strutils, sequtils, tables]
+import std/[os, sequtils, tables]
 import ../domain/types
 import ../paths
 

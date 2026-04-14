@@ -1,4 +1,4 @@
-import std/[os, strformat, strutils]
+import std/[os, strformat]
 import ../io/yaml_io
 import ../validate/lint
 import ../paths

@@ -1,5 +1,5 @@
 # src/assetlic/ui/select.nim
-import std/[strutils, sequtils]
+import std/[strutils]
 
 type
   Choice* = object
