@@ -59,9 +59,9 @@ proc renderLicenseYaml*(l: License): string =
   lines.add("requires:")
   lines.add("  attribution: " & $l.requires.attribution)
   lines.add("  notice: " & $l.requires.notice)
-  lines.add("  shareAlike: " & $l.requires.shareAlike)
-  lines.add("  nonCommercial: " & $l.requires.nonCommercial)
-  lines.add("  noDerivatives: " & $l.requires.noDerivatives)
+  lines.add("  share_alike: " & $l.requires.shareAlike)
+  lines.add("  non_commercial: " & $l.requires.nonCommercial)
+  lines.add("  no_derivatives: " & $l.requires.noDerivatives)
 
   if l.defaultCreditTemplate.len > 0:
     lines.add("default_credit_template: " & yq(l.defaultCreditTemplate))
