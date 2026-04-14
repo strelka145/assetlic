@@ -5,7 +5,6 @@ import ../io/yaml_io
 import ../paths
 import ../ui/select
 import ../render/yaml_render
-import ../io/path_guard
 
 proc slugify(s: string): string =
   var r = newStringOfCap(s.len)

@@ -1,7 +1,6 @@
 import std/[os, strutils, sequtils, tables]
 import ../domain/types
 import ../paths
-import ../io/path_guard
 
 type
   Severity* = enum

@@ -1,4 +1,4 @@
-import std/[os, strutils, unicode]
+import std/[os, strutils]
 
 proc normPathPosixish*(p: string): string =
   ## Accept forward slashes in YAML; normalize to current OS path.
@@ -27,3 +27,19 @@ proc isAbsoluteOrHomeLike*(p: string): bool =
   # UNC: \\server\share
   if p.len >= 2 and p[0] == '\\' and p[1] == '\\': return true
   return false
+
+proc isInsideProject*(projectRoot, relPath: string): bool =
+  ## Returns true if relPath stays inside projectRoot
+  let rootAbs = absolutePath(projectRoot).normalizedPath()
+
+  if isAbsolute(relPath):
+    return false
+
+  let absPath = absolutePath(rootAbs / relPath).normalizedPath()
+  let relCheck = relativePath(absPath, rootAbs)
+
+  if relCheck == "..": return false
+  if relCheck.startsWith(".." & DirSep): return false
+  if relCheck.startsWith("../"): return false
+
+  true
