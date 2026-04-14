@@ -1,10 +1,7 @@
-import std/[os, strutils]
+import std/[os]
 import ../domain/types
 import ../render/yaml_render
 import ../ui/prompt
-
-proc slugify(s: string): string =
-  s.toLowerAscii().replace(" ", "_")
 
 proc addLicense*(
   db = "assetdb",
