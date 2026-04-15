@@ -1,4 +1,4 @@
-import std/[os, sequtils, tables]
+import std/[os, strutils, sequtils, tables]
 import ../domain/types
 import ../paths
 
@@ -65,6 +65,29 @@ proc validateReferences(db: Db): seq[Issue] =
       if cid.len > 0 and not db.creators.hasKey(cid):
         result.add(err("REF_CREATOR_NOT_FOUND", "creator_id not found: " & cid, hint))
 
+proc extractIdField(path: string): string =
+  ## Read just the `id:` field from a YAML file without full parsing.
+  for line in readFile(path).splitLines():
+    let s = line.strip()
+    if s.startsWith("id:"):
+      return s[3..^1].strip().strip(chars = {'"', '\''})
+
+proc validateFilenameIdMatch(dbRoot: string): seq[Issue] =
+  result = @[]
+  for subdir in ["assets", "licenses", "creators"]:
+    let dir = dbRoot / subdir
+    if not dirExists(dir): continue
+    for kind, path in walkDir(dir):
+      if kind != pcFile: continue
+      if not (path.endsWith(".yml") or path.endsWith(".yaml")): continue
+      let stem = splitFile(path).name
+      let idInFile = extractIdField(path)
+      if idInFile.len == 0: continue  # caught by validateRequiredFields
+      if idInFile != stem:
+        result.add(err("FILENAME_ID_MISMATCH",
+          "filename '" & stem & ".yml' does not match id: '" & idInFile & "'",
+          subdir & ":" & stem))
+
 proc validatePaths(db: Db; projectRoot: string): seq[Issue] =
   result = @[]
   let root = projectRoot.normalizedPath()
@@ -96,3 +119,4 @@ proc lintDb*(db: Db; projectRoot: string): seq[Issue] =
   result.add validateRequiredFields(db)
   result.add validateReferences(db)
   result.add validatePaths(db, projectRoot)
+  result.add validateFilenameIdMatch(db.dbRoot)
