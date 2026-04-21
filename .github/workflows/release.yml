@@ -1,0 +1,58 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Build test version (e.g., v0.0.0-test)'
+        required: false
+        default: 'v0.0.0-test'
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Nim
+        uses: jiro4989/setup-nim-action@v2
+        with:
+          nim-version: "stable"
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install dependencies
+        run: nimble install -d --accept
+
+      - name: Build
+        run: nimble build -d:release
+
+      - name: Archive (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: |
+          BINARY=$(nimble dump | grep "^bin:" | awk '{print $2}' | tr -d '"')
+          tar czf ${BINARY}-${{ runner.os }}-${{ github.event.release.tag_name || github.event.inputs.version }}.tar.gz ${BINARY}
+
+      - name: Archive (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $bin = (nimble dump | Select-String "^bin:").ToString().Split('"')[1]
+          $bin = $bin -replace '\.exe$', ''
+          Compress-Archive -Path "${bin}.exe" -DestinationPath "${bin}-Windows-${{ github.event.release.tag_name || github.event.inputs.version }}.zip"
+
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: github.event_name == 'release'
+        with:
+          files: |
+            *.tar.gz
+            *.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
