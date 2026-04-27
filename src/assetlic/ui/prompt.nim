@@ -38,6 +38,15 @@ proc askRequiredString*(prompt: string): string =
       return input
     echo "This field is required."
 
+proc askStrings*(prompt: string): seq[string] =
+  echo prompt & " (empty line to finish):"
+  while true:
+    stdout.write("  > ")
+    let input = stdin.readLine().strip()
+    if input.len == 0:
+      break
+    result.add(input)
+
 proc askBool*(prompt: string; default: bool): bool =
   let suffix =
     if default: " [Y/n]: "

@@ -13,6 +13,7 @@ proc addLicense*(
   shareAlike = false,
   nonCommercial = false,
   noDerivatives = false,
+  prohibitions: seq[string] = @[],
   creditTemplate = "",
   nonInteractive = false,
   dryRun = false
@@ -60,6 +61,12 @@ proc addLicense*(
       nonCommercial: askBool("Non-commercial only?", false),
       noDerivatives: askBool("No derivatives allowed?", false)
     )
+
+  # --- PROHIBITIONS ---
+  if prohibitions.len > 0:
+    lic.prohibitions = prohibitions
+  elif not nonInteractive:
+    lic.prohibitions = askStrings("Prohibitions (e.g. \"No resale\", \"No redistribution\")")
 
   # --- TEMPLATE ---
   if creditTemplate.len > 0:

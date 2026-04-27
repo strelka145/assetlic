@@ -17,6 +17,7 @@ type
     name*: string
     url*: string
     requires*: LicenseReq
+    prohibitions*: seq[string]
     defaultCreditTemplate*: string
 
   Creator* = object

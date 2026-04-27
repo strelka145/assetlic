@@ -63,6 +63,11 @@ proc renderLicenseYaml*(l: License): string =
   lines.add("  non_commercial: " & $l.requires.nonCommercial)
   lines.add("  no_derivatives: " & $l.requires.noDerivatives)
 
+  if l.prohibitions.len > 0:
+    lines.add("prohibitions:")
+    for p in l.prohibitions:
+      lines.add("  - " & yq(p))
+
   if l.defaultCreditTemplate.len > 0:
     lines.add("default_credit_template: " & yq(l.defaultCreditTemplate))
 
