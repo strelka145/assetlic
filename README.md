@@ -37,49 +37,69 @@ assetlic.exe   (Windows)
 assetlic       (Linux/macOS)
 ```
 
-## Quick Start
+---
 
-### 1. Initialize database
+## Commands
+
+### `init` — Initialize database
 
 ```bash
-assetlic init
+assetlic init [--dir=assetdb] [--with-examples=true]
 ```
 
-This creates:
+Creates the `assetdb/` directory structure and seeds a CC BY 4.0 license entry.
 
 ```
 assetdb/
   assets/
   licenses/
+    cc_by_4.yml   ← seeded automatically
   creators/
   projects/
+  templates/
+    credits.md.tpl
+    credits.txt.tpl
+    endroll.txt.tpl
 ```
 
-### 2. Add a license (manual YAML)
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--dir` | `assetdb` | Path to the database directory |
+| `--with-examples` | `true` | Seed example asset, creator, and project files |
 
-Create a file like:
+---
 
+### `add` — Add an asset
+
+```bash
+assetlic add [options]
 ```
-assetdb/licenses/cc_by_4.yml
-```
 
-```yaml
-id: cc_by_4
-name: "Creative Commons Attribution 4.0"
-```
+Registers an asset interactively (prompts for missing values) or fully via flags.
 
-### 3. Add an asset (hybrid CLI)
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--db` | `assetdb` | Path to the database directory |
+| `--root` | `.` | Project root for path validation |
+| `--file` | *(prompt)* | Asset file path (relative to project root) |
+| `--id` | *(auto from filename)* | Asset ID |
+| `--name` | *(prompt)* | Display name |
+| `--type` | *(prompt)* | Type (e.g. `bgm`, `sfx`, `image`, `font`, `model`) |
+| `--license` | *(select)* | License ID |
+| `--creator` | *(multi-select)* | Creator ID(s); repeatable or comma-separated |
+| `--tag` | | Tag(s); repeatable or comma-separated |
+| `--source-url` | | Source URL |
+| `--source-vendor` | | Source vendor name |
+| `--non-interactive` | `false` | Disable all prompts (all required flags must be set) |
+| `--dry-run` | `false` | Print generated YAML without writing |
+
+Example:
 
 ```bash
 assetlic add --file Assets/Audio/BGM/forest.ogg
 ```
 
-The tool will:
-- Suggest an ID
-- Ask for name/type if missing
-- Let you select a license (with search)
-- Let you select creators (multi-select)
-- Generate `assetdb/assets/<id>.yml`
+The tool will suggest an ID from the filename, prompt for missing fields, and let you select a license and creators interactively. New creators can be registered inline during selection.
 
 Example output:
 
@@ -91,23 +111,99 @@ license_id: cc_by_4
 creator_ids: ["john_doe"]
 files:
   - "Assets/Audio/BGM/forest.ogg"
+source:
+  url: "https://example.com"
+  vendor: "ExampleSite"
 tags: ["release"]
 ```
 
-## Linting
+---
 
-Validate your database:
+### `add-license` — Add a license
 
 ```bash
-assetlic lint
+assetlic add-license [options]
 ```
 
-Checks include:
-- Required fields
-- Reference integrity (license/creator existence)
-- Relative path enforcement
-- Prevention of project root escape (`..`)
-- File existence (warning by default)
+Registers a license interactively or fully via flags.
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--db` | `assetdb` | Path to the database directory |
+| `--name` | *(prompt)* | License name |
+| `--id` | *(auto from name)* | License ID |
+| `--url` | *(prompt)* | License URL |
+| `--attribution` | `false` | Requires attribution |
+| `--notice` | `false` | Requires notice |
+| `--share-alike` | `false` | Requires share-alike |
+| `--non-commercial` | `false` | Non-commercial use only |
+| `--no-derivatives` | `false` | No derivatives allowed |
+| `--prohibitions` | | Custom prohibition text; repeatable |
+| `--credit-template` | *(prompt)* | Default credit template string |
+| `--non-interactive` | `false` | Disable all prompts |
+| `--dry-run` | `false` | Print generated YAML without writing |
+
+Example:
+
+```bash
+assetlic add-license --name "My Custom License" --attribution --prohibitions:"No resale" --prohibitions:"No redistribution"
+```
+
+Example output:
+
+```yaml
+id: my_custom_license
+name: "My Custom License"
+requires:
+  attribution: true
+  notice: false
+  share_alike: false
+  non_commercial: false
+  no_derivatives: false
+prohibitions:
+  - "No resale"
+  - "No redistribution"
+```
+
+---
+
+### `lint` — Validate database
+
+```bash
+assetlic lint [--db=assetdb] [--project-root=.] [--fail-on-warn=false]
+```
+
+Checks the integrity of the entire database.
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--db` | *(auto-detected)* | Path to the database directory |
+| `--project-root` | `.` | Project root for file path validation |
+| `--fail-on-warn` | `false` | Exit with code 3 if any warnings exist |
+
+**Exit codes:** `0` = clean, `2` = errors found, `3` = warnings found (with `--fail-on-warn`)
+
+Checks performed:
+
+| Code | Severity | Description |
+|------|----------|-------------|
+| `ASSET_ID_MISSING` | ERROR | `id` field is empty |
+| `ASSET_NAME_MISSING` | ERROR | `name` field is empty |
+| `ASSET_TYPE_MISSING` | ERROR | `type` field is empty |
+| `ASSET_LICENSE_MISSING` | ERROR | `license_id` field is empty |
+| `ASSET_FILES_MISSING` | ERROR | `files` is empty (non-example assets) |
+| `LICENSE_ID_MISSING` | ERROR | License `id` is empty |
+| `LICENSE_NAME_MISSING` | ERROR | License `name` is empty |
+| `CREATOR_ID_MISSING` | ERROR | Creator `id` is empty |
+| `CREATOR_NAME_MISSING` | WARN | Creator `name` is missing |
+| `PROJECT_ID_MISSING` | ERROR | Project `id` is empty |
+| `PROJECT_NAME_MISSING` | WARN | Project `name` is missing |
+| `REF_LICENSE_NOT_FOUND` | ERROR | `license_id` references a non-existent license |
+| `REF_CREATOR_NOT_FOUND` | ERROR | `creator_id` references a non-existent creator |
+| `PATH_ABSOLUTE` | ERROR | `files` entry is an absolute path |
+| `PATH_ESCAPES_ROOT` | ERROR | `files` entry escapes project root via `..` |
+| `PATH_NOT_FOUND` | WARN | `files` entry does not exist on disk |
+| `FILENAME_ID_MISMATCH` | ERROR | Filename does not match the `id` field inside the file |
 
 Example output:
 
@@ -116,6 +212,8 @@ ERROR [REF_LICENSE_NOT_FOUND] license_id not found: unknown_license (asset:fores
 WARN  [PATH_NOT_FOUND] file not found: Assets/Audio/BGM/test.ogg (asset:test)
 Summary: errors=1, warnings=1
 ```
+
+---
 
 ## Database Structure
 
@@ -128,24 +226,54 @@ assetdb/
   creators/
     <creator_id>.yml
   projects/
+    <project_id>.yml
+  templates/
+    credits.md.tpl
+    credits.txt.tpl
+    endroll.txt.tpl
 ```
 
-### Asset Schema (simplified)
+### Asset Schema
 
 ```yaml
 id: string
 name: string
-type: string
+type: string              # bgm, sfx, image, font, model, other, ...
 license_id: string
 creator_ids: [string]
 files:
-  - relative/path
+  - relative/path/to/file
 source:
-  url: string
-  vendor: string
-tags: [string]
-credit_text: string
-modifications: string
+  url: string             # optional
+  vendor: string          # optional
+tags: [string]            # optional
+credit_text: string       # optional
+modifications: string     # optional
+```
+
+### License Schema
+
+```yaml
+id: string
+name: string
+url: string               # optional
+requires:
+  attribution: bool
+  notice: bool
+  share_alike: bool
+  non_commercial: bool
+  no_derivatives: bool
+prohibitions:             # optional
+  - string
+default_credit_template: string  # optional
+```
+
+### Creator Schema
+
+```yaml
+id: string
+name: string
+url: string               # optional
 ```
 
 ## Path Rules
@@ -160,6 +288,6 @@ modifications: string
 Planned features:
 - `credits` command (auto-generate credit text)
 - `strict` lint mode
-- `add license` and `add creator`
+- `add creator` command
 - Template-based credit rendering
 - CI integration mode
